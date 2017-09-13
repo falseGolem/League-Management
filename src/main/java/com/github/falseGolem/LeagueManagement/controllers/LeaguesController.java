@@ -1,9 +1,12 @@
 package com.github.falseGolem.LeagueManagement.controllers;
 
+import com.github.falseGolem.LeagueManagement.controllers.exceptions.LeaguesNpeException;
 import com.github.falseGolem.LeagueManagement.models.League;
 import com.github.falseGolem.LeagueManagement.models.requests.LeagueCreateRequest;
 import com.github.falseGolem.LeagueManagement.services.LeaguesService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,8 +36,8 @@ public class LeaguesController {
     }
 
     @GetMapping(value = "/{uuid}")
-    public League getLeague(@PathVariable UUID uuid) {
-        return leaguesService.get(uuid);
+    public ResponseEntity<League> getLeague(@PathVariable UUID uuid) throws LeaguesNpeException {
+        return new ResponseEntity<>(leaguesService.get(uuid), HttpStatus.OK);
     }
 
     @PostMapping
@@ -43,12 +46,12 @@ public class LeaguesController {
     }
 
     @PutMapping(value = "/{uuid}")
-    public League putLeague(@RequestBody League league) {
-        return leaguesService.update(league);
+    public ResponseEntity<League> putLeague(@RequestBody League league) throws LeaguesNpeException {
+        return new ResponseEntity<>(leaguesService.update(league), HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{uuid}")
-    public void deleteLeague(@PathVariable UUID uuid) {
+    public void deleteLeague(@PathVariable UUID uuid) throws LeaguesNpeException {
         leaguesService.delete(uuid);
     }
 }

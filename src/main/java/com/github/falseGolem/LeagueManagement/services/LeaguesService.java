@@ -1,10 +1,12 @@
 package com.github.falseGolem.LeagueManagement.services;
 
+import com.github.falseGolem.LeagueManagement.controllers.exceptions.LeaguesNpeException;
 import com.github.falseGolem.LeagueManagement.models.League;
 import com.github.falseGolem.LeagueManagement.models.requests.LeagueCreateRequest;
 import com.github.falseGolem.LeagueManagement.repositories.LeaguesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +22,9 @@ public class LeaguesService {
     }
 
     public League create(final LeagueCreateRequest leagueCreateRequest) {
+        if (leagueCreateRequest == null || StringUtils.isEmpty(leagueCreateRequest.getName())) {
+            throw new LeaguesNpeException("League object cannot be null.");
+        }
         League league = new League();
         league.setName(leagueCreateRequest.getName());
         league.setDescription(leagueCreateRequest.getDescription());
@@ -30,15 +35,24 @@ public class LeaguesService {
         return leaguesRepository.findAll();
     }
 
-    public League get(final UUID uuid) {
+    public League get(final UUID uuid) throws LeaguesNpeException {
+        if (uuid == null) {
+            throw new LeaguesNpeException("League UUID cannot be null.");
+        }
         return leaguesRepository.findOne(uuid);
     }
 
-    public void delete(final UUID uuid) {
+    public void delete(final UUID uuid) throws LeaguesNpeException {
+        if (uuid == null) {
+            throw new LeaguesNpeException("League UUID cannot be null.");
+        }
         leaguesRepository.delete(uuid);
     }
 
-    public League update(final League league) {
+    public League update(final League league) throws LeaguesNpeException {
+        if (league == null || StringUtils.isEmpty(league.getName())) {
+            throw new LeaguesNpeException("League object cannot be null.");
+        }
         return leaguesRepository.saveAndFlush(league);
     }
 }
