@@ -1,7 +1,9 @@
 package com.github.falseGolem.LeagueManagement;
 
+import ch.qos.logback.core.pattern.util.RegularEscapeUtil;
 import com.github.falseGolem.LeagueManagement.models.League;
 import com.github.falseGolem.LeagueManagement.models.requests.LeagueCreateRequest;
+import com.github.falseGolem.LeagueManagement.utils.RandomString;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.After;
@@ -11,9 +13,11 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
@@ -60,7 +64,9 @@ public class LeagueControllerIT {
         League league = given().contentType("application/json").body(request).when().post("rest/leagues").as(League.class);
         League returnedLeague = when().get("rest/leagues/" + league.getId()).as(League.class);
 
-        assertEquals(league, returnedLeague);
+        assertEquals(league.getId(), returnedLeague.getId());
+        assertEquals(league.getDescription(), returnedLeague.getDescription());
+        assertEquals(league.getName(), returnedLeague.getName());
     }
 
     @Test
@@ -130,28 +136,65 @@ public class LeagueControllerIT {
     }
 
     @Test
+    public void shouldHideServerException_deleteLeague() {
+        Response response = when().delete("/rest/leagues/aaa");
+        assertEquals(400, response.getStatusCode());
+        assertTrue(response.asString().contains("Looks like you're trying to send data in wrong format."));
+    }
+
+    @Test
+    public void shouldReturnEmptyBodyIfNoUuidIsFound_getLeague() {
+        Response response = when().get("/rest/leagues/" + UUID.randomUUID());
+        assertEquals(200, response.getStatusCode());
+        assertTrue(StringUtils.isEmpty(response.asString()));
+    }
+
+    @Test
+    public void shouldReturnEmptyBodyIfNoUuidIsFound_putLeague() {
+        UUID uuid = UUID.randomUUID();
+        League league = new League();
+        league.setId(uuid);
+        league.setName("Put League");
+        Response response = given().contentType("application/json").body(league).when().put("/rest/leagues/" + UUID.randomUUID());
+        assertEquals(200, response.getStatusCode());
+        assertTrue(StringUtils.isEmpty(response.asString()));
+    }
+
+    @Test
     public void shouldHideServerException_postLeague_nullField() {
         LeagueCreateRequest leagueCreateRequest = new LeagueCreateRequest();
         leagueCreateRequest.setName(null);
         Response response = given().contentType("application/json").body(leagueCreateRequest).when().post("/rest/leagues");
         assertEquals(400, response.getStatusCode());
-        assertTrue(response.asString().contains("Looks like you're trying to send null as param."));
+        assertTrue(response.asString().contains("Looks like objects are not valid."));
     }
 
     @Test
     public void shouldHideServerException_putLeague_nullField() {
-        League league = new League();
+        LeagueCreateRequest leagueCreateRequest = new LeagueCreateRequest();
+        leagueCreateRequest.setName("New League");
+        League league = given().contentType("application/json").body(leagueCreateRequest).when().post("/rest/leagues").as(League.class);
         league.setName(null);
-        Response response = given().contentType("application/json").body(league).when().put("/rest/leagues/aaa");
+        Response response = given().contentType("application/json").body(league).when().put("/rest/leagues/" + league.getId());
         assertEquals(400, response.getStatusCode());
-        assertTrue(response.asString().contains("Looks like you're trying to send null as param."));
+        assertTrue(response.asString().contains("Looks like objects are not valid."));
     }
 
     @Test
-    public void shouldHideServerException_deleteLeague() {
-        Response response = when().delete("/rest/leagues/aaa");
-        assertEquals(400, response.getStatusCode());
-        assertTrue(response.asString().contains("Looks like you're trying to send data in wrong format."));
+    public void shouldNotAllowForLongNames() {
+        LeagueCreateRequest leagueCreateRequest = new LeagueCreateRequest();
+        leagueCreateRequest.setName(new RandomString(68).nextString());
+        Response response = given().contentType("application/json").body(leagueCreateRequest).when().post("/rest/leagues");
+        assertTrue(response.asString().contains("Looks like objects are not valid."));
+    }
+
+    @Test
+    public void shouldNotAllowForLongDescription() {
+        LeagueCreateRequest leagueCreateRequest = new LeagueCreateRequest();
+        leagueCreateRequest.setName(new RandomString(6).nextString());
+        leagueCreateRequest.setDescription(new RandomString(256).nextString());
+        Response response = given().contentType("application/json").body(leagueCreateRequest).when().post("/rest/leagues");
+        assertTrue(response.asString().contains("Looks like objects are not valid."));
     }
 
     @After

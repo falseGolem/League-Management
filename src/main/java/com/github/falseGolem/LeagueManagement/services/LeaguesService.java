@@ -49,10 +49,13 @@ public class LeaguesService {
         leaguesRepository.delete(uuid);
     }
 
-    public League update(final League league) throws LeaguesNpeException {
-        if (league == null || StringUtils.isEmpty(league.getName())) {
+    public League update(final League updatedLeague) throws LeaguesNpeException {
+        if (updatedLeague == null || StringUtils.isEmpty(updatedLeague.getName())) {
             throw new LeaguesNpeException("League object cannot be null.");
         }
-        return leaguesRepository.saveAndFlush(league);
+        else if (!leaguesRepository.exists(updatedLeague.getId())) {
+            throw new LeaguesNpeException("No league with such UUID: " + updatedLeague.getId());
+        }
+        return leaguesRepository.saveAndFlush(updatedLeague);
     }
 }

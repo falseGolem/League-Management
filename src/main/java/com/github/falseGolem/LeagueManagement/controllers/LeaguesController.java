@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,13 +42,17 @@ public class LeaguesController {
     }
 
     @PostMapping
-    public League postLeague(@RequestBody LeagueCreateRequest leagueCreateRequest) {
+    public League postLeague(@Valid @RequestBody LeagueCreateRequest leagueCreateRequest) {
         return leaguesService.create(leagueCreateRequest);
     }
 
     @PutMapping(value = "/{uuid}")
-    public ResponseEntity<League> putLeague(@RequestBody League league) throws LeaguesNpeException {
-        return new ResponseEntity<>(leaguesService.update(league), HttpStatus.OK);
+    public ResponseEntity<League> putLeague(@Valid @RequestBody League league, @PathVariable UUID uuid) throws LeaguesNpeException {
+        League responseLeague = null;
+        if (leaguesService.get(uuid) != null) {
+            responseLeague = leaguesService.update(league);
+        }
+        return new ResponseEntity<>(responseLeague, HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{uuid}")

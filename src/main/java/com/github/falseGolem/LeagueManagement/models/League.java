@@ -1,12 +1,14 @@
 package com.github.falseGolem.LeagueManagement.models;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
 import java.util.UUID;
 
 @Entity
@@ -20,17 +22,16 @@ public class League {
     private UUID id;
 
     @Column(length = 64)
+    @Size(min = 1, max = 64)
+    @NotBlank
     private String name;
 
     @Column
+    @Size(max = 255)
     private String description;
 
     public UUID getId() {
         return id;
-    }
-
-    public void setId(final UUID id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -49,32 +50,7 @@ public class League {
         this.description = description;
     }
 
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) { return true; }
-        if (!(o instanceof League)) { return false; }
-
-        League league = (League) o;
-
-        if (!getId().equals(league.getId())) { return false; }
-        if (!getName().equals(league.getName())) { return false; }
-        return getDescription() != null ? getDescription().equals(league.getDescription()) : league.getDescription() == null;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = getId().hashCode();
-        result = 31 * result + getName().hashCode();
-        result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "League{" +
-               "id=" + id +
-               ", name='" + name + '\'' +
-               ", description='" + description + '\'' +
-               '}';
+    public void setId(final UUID id) {
+        this.id = id;
     }
 }

@@ -4,6 +4,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -35,6 +36,14 @@ public class LeaguesExceptionHandler extends ResponseEntityExceptionHandler {
                                                                HttpHeaders headers, HttpStatus status, WebRequest request) {
         LeaguesError globalException = new LeaguesError();
         globalException.setCause("Looks like you're trying to send empty body.");
+        return handleExceptionInternal(ex, globalException, new HttpHeaders(), HttpStatus.BAD_REQUEST, null);
+    }
+
+    @Override
+    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                               HttpHeaders headers, HttpStatus status, WebRequest request) {
+        LeaguesError globalException = new LeaguesError();
+        globalException.setCause("Looks like objects are not valid.");
         return handleExceptionInternal(ex, globalException, new HttpHeaders(), HttpStatus.BAD_REQUEST, null);
     }
 

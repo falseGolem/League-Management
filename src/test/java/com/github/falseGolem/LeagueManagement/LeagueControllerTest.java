@@ -8,6 +8,8 @@ import com.github.falseGolem.LeagueManagement.models.requests.LeagueCreateReques
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.UUID;
+
 public class LeagueControllerTest {
 
     private LeaguesController leaguesController;
@@ -24,14 +26,14 @@ public class LeagueControllerTest {
 
     @Test(expected = LeaguesNpeException.class)
     public void shouldHandleNegativeScenariosOnPut_null() {
-        leaguesController.putLeague(null);
+        leaguesController.putLeague(null, UUID.randomUUID());
     }
 
     @Test(expected = LeaguesNpeException.class)
     public void shouldHandleNegativeScenariosOnPut_nullField() {
         League league = new League();
         league.setName(null);
-        leaguesController.putLeague(league);
+        leaguesController.putLeague(league, UUID.randomUUID());
     }
 
     @Test(expected = LeaguesNpeException.class)
